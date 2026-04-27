@@ -1,0 +1,65 @@
+from dataclasses import dataclass
+import sqlite3
+from typing import NamedTuple, Optional
+
+from ai_engine import DoodleHistoryEngine
+
+
+@dataclass
+class Element:
+    name: str
+    is_base: bool = False
+    is_goal: bool = False
+    is_guide: bool = False
+    is_obtained: bool = False
+
+
+class ComboResult(NamedTuple):
+    result: Optional[str]
+    desc: Optional[str]
+    new_elem: bool
+    did_obtain_goal: bool
+
+
+conn = sqlite3.connect("combinations.db")
+cursor = conn.cursor()
+
+cursor.execute("SELECT name, is_base, is_goal, is_guide FROM items")
+elem_tuples = cursor.fetchall()
+
+
+class DoodleHistoryGame:
+    def __init__(self, engine: DoodleHistoryEngine):
+        self.all_elems: dict[str, Element] = {elem[0]: Element(*elem) for elem in elem_tuples}
+        self.engine = engine
+
+        self.base: set[str] = {e for e, v in self.all_elems.items() if v.is_base}
+        self.goal: set[str] = {e for e, v in self.all_elems.items() if v.is_goal}
+        self.guide: set[str] = {e for e, v in self.all_elems.items() if v.is_guide}
+        self.reset()
+    
+    @property
+    def obtained(self) -> set[str]:
+        return {e for e, v in self.all_elems.items() if v.is_obtained}
+    
+    @property
+    def progress(self):
+        return len(self.goal & self.obtained) / len(self.goal)
+    
+    def reset(self):
+        for base in self.base:
+            self.all_elems[base].is_obtained = True
+
+    def combine(self, item1: str, item2: str) -> ComboResult:
+        result_obj = self.engine.combine(item1, item2)
+        result = result_obj.result
+        desc = result_obj.desc
+
+        new_elem = False
+        did_obtain_goal = False
+        if result and not self.all_elems[result].is_obtained:
+            self.all_elems[result].is_obtained = True
+            new_elem = True
+            did_obtain_goal = self.all_elems[result].is_goal
+        
+        return ComboResult(result, desc, new_elem, did_obtain_goal)
