@@ -1,5 +1,5 @@
 import sqlite3
-from typing import Optional
+from typing import NamedTuple, Optional
 
 from google import genai
 from pydantic import BaseModel, Field
@@ -36,15 +36,22 @@ class CombResult(BaseModel):
     desc: Optional[str] = Field(description="One sentence of description or justification of the combination result")
 
 
-def _try_combine(item1_id: int, item2_id: int) -> Optional[tuple[Optional[str]]]:
+class DBResult(NamedTuple):
+    is_cached: bool
+    result: Optional[str]
+
+
+def _try_combine(item1_id: int, item2_id: int) -> DBResult:
     cursor.execute("""
-        SELECT items.name 
+        SELECT items.name
         FROM recipe 
-        JOIN items ON recipe.result_id = items.id
+        LEFT JOIN items ON recipe.result_id = items.id
         WHERE recipe.item1_id = ? AND recipe.item2_id = ?
     """, (item1_id, item2_id))
     
-    return cursor.fetchone()
+    if row := cursor.fetchone():
+        return DBResult(True, row[0])
+    return DBResult(False, None)
 
 
 def _prompt_genai(item1: str, item2: str) -> CombResult:
@@ -69,16 +76,21 @@ def combine(item1: str, item2: str) -> Optional[str]:
     item2_id = cursor.fetchone()[0]
 
     item1_id, item2_id = sorted((item1_id, item2_id))
-    if result := _try_combine(item1_id, item2_id):
-        return result[0]
+    is_cached, result = _try_combine(item1_id, item2_id)
+    if is_cached:
+        return result
     
     result_obj = _prompt_genai(item1, item2)
-
     result = result_obj.result
-    cursor.execute("INSERT OR IGNORE INTO items (name) VALUES (?)", (result,))
-    cursor.execute("SELECT id FROM items WHERE name = ?", (result,))
-    result_id = cursor.fetchone()[0]
 
-    cursor.execute("INSERT OR IGNORE INTO recipe (item1_id, item2_id, result_id, desc) VALUES (?, ?, ?, ?)", 
-                   (item1_id, item2_id, result_id, result_obj.desc))
+    result_id = None
+    if result:
+        cursor.execute("INSERT OR IGNORE INTO items (name) VALUES (?)", (result,))
+        cursor.execute("SELECT id FROM items WHERE name = ?", (result,))
+        result_id = cursor.fetchone()[0]
+
+    cursor.execute(
+        "INSERT OR IGNORE INTO recipe (item1_id, item2_id, result_id, desc) VALUES (?, ?, ?, ?)", 
+        (item1_id, item2_id, result_id, result_obj.desc)
+    )
     return result
