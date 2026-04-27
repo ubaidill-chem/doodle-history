@@ -2,8 +2,7 @@ import sqlite3
 
 with open('data.csv', mode='r', encoding='utf-8-sig') as f:
     base_elems = [(x,) for x in f.readline().strip('\n').split(',') if x]
-    target_elems = [(x,) for x in f.readline().strip('\n').split(',')]
-    target_elems.extend([(x,) for x in f.readline().strip('\n').split(',')])
+    target_elems = [(x,) for x in f.readline().strip('\n').split(',') if x]
     guide_elems = [(x,) for line in f.readlines() for x in line.strip('\n').split(',') if x]
 
 conn = sqlite3.connect('combinations.db')

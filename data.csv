@@ -1,13 +1,12 @@
-﻿State,Capital,Society,Land,Science,,,,,
-Ford Model T,League of Nations,The Jazz Singer,Fireside Chats,Schrodinger's Cat,Hiroshima and Nagasaki,Nuremberg Trials,Nakba,Apartheid,Bandung Conference
-Silent Spring,I Have a Dream,Cultural Revolution,Apollo 11,Operation Condor,Petrodollar,AIDS crisis,Polio vaccine,Dissolution of the USSR,World Wide Web
-Resources,Industrialization,Technology,War,Weapons,Oil,Energy,Music,,
-Politics,Politician,Military,Militia,Mass Media,Conflict,Revolution,Stock Market,,
-Philosophy,Biology,Ecology,Medicine,Economics,Physics,Atom,Quantum Mechanics,,
-Ideology,Democracy,Capitalism,Communism,Nationalism,Fascism,Colonialism,Dictatorship,Racism,Human Rights
-World War II,World War I,Cold War,Great Depression,Space Race,Vietnam War,Holocaust,Holodomor,Cuban Missile Crisis,Rwandan Genocide
-Wright Brothers Flyer,Theory of Relativity,Sputnik,Penicillin,Artificial Heart,DNA,Contraception,ENIAC,ARPANET,Email
-Prohibition,Speakeasy,Hollywood,Jazz,Cinema,Citizen Kane,Counterculture,Live Aid,Psychedelics,Watergate
-Chemical Warfare,Trench Warfare,Trench Foot,Enigma,Manhattan Project,Hydrogen Bomb,Propaganda,Espionage,Agent Orange,Genocide
-Treaty of Versailles,Reichstag Fire,Hindenburg Disaster,Night of Long Knives,Chernobyl,Russian Revolution,Five-Year Plan,Little Red Book,Red Scare,Jakarta Method
-Region,World,USA,USSR,Nazi Germany,Europe,United Nations,European Union,Non-Proliferation Treaty,Marshall Plan
+﻿State,Capital,Society,Land,Science,,,,,,,,,,,,,,,
+Ford Model T,League of Nations,The Jazz Singer,Fireside Chats,Schrodinger's Cat,Hiroshima and Nagasaki,Nuremberg Trials,Nakba,Apartheid,Bandung Conference,Silent Spring,I Have a Dream,Cultural Revolution,Apollo 11,Operation Condor,Petrodollar,AIDS crisis,Polio vaccine,Dissolution of the USSR,World Wide Web
+Resources,Industrialization,Technology,War,Weapons,Oil,Energy,Music,,,,,,,,,,,,
+Politics,Politician,Military,Militia,Mass Media,Conflict,Revolution,Stock Market,,,,,,,,,,,,
+Philosophy,Biology,Ecology,Medicine,Economics,Physics,Atom,Quantum Mechanics,,,,,,,,,,,,
+Ideology,Democracy,Capitalism,Communism,Nationalism,Fascism,Colonialism,Dictatorship,Racism,Human Rights,,,,,,,,,,
+World War II,World War I,Cold War,Great Depression,Space Race,Vietnam War,Holocaust,Holodomor,Cuban Missile Crisis,Rwandan Genocide,,,,,,,,,,
+Wright Brothers Flyer,Theory of Relativity,Sputnik,Penicillin,Artificial Heart,DNA,Contraception,ENIAC,ARPANET,Email,,,,,,,,,,
+Prohibition,Speakeasy,Hollywood,Jazz,Cinema,Citizen Kane,Counterculture,Live Aid,Psychedelics,Watergate,,,,,,,,,,
+Chemical Warfare,Trench Warfare,Trench Foot,Enigma,Manhattan Project,Hydrogen Bomb,Propaganda,Espionage,Agent Orange,Genocide,,,,,,,,,,
+Treaty of Versailles,Reichstag Fire,Hindenburg Disaster,Night of Long Knives,Chernobyl,Russian Revolution,Five-Year Plan,Little Red Book,Red Scare,Jakarta Method,,,,,,,,,,
+Region,World,USA,USSR,Nazi Germany,Europe,United Nations,European Union,Non-Proliferation Treaty,Marshall Plan,,,,,,,,,,
