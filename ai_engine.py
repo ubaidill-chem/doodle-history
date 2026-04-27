@@ -11,17 +11,21 @@ Available Targets: ```json
 {
 "Milestones": {target_elems}
 "Guides": {guide_elems}
+"Existing Universe": {other_elems}
 }
 ```
+Base Items: {base_elems}
 
 Rules:
 1. Determine if combining Input A and Input B results in a historically accurate event, concept, or invention.
 2. If there is NO historical or logical connection, you must return null.
 3. If there is a connection, look at the `Milestones` list. If the result logically matches or heavily aligns with a target, you MUST output the exact name of that target.
 4. If a valid historical result exists but does NOT trigger a `Milestone`, look at the `Guides` list. If it strongly aligns with an item in that list, output that exact name of that item.
-5. If a valid historical result exists but does NOT match any available items, output a short, accurate 1-3 word name for the new concept.
-6. If a valid historical result exists, also return a one sentence description or justification of why that result was choosen.
+5. If a valid historical result exists but does NOT match the `Guides` either, look at the `Existing Universe`. If it is a direct synonym, plural, or functionally identical concept to an item on that list, output that exact name of that item.
+6. If a valid historical result exists and it matches one of the `Base Items` instead, do NOT default to that item. Instead, think of another concept and repeat from step 1.
+7. If a valid historical result exists but is historically distinct from everything in the lists above, output a short, accurate 1-3 word name for the new concept.
 
+If a valid historical result exists, also return a one sentence description or justification of why that result was choosen.
 Output format: JSON only. `{"result": "Output Name", "desc": "Description"}` or `{"result": null, "desc": null}`"""
 
 
@@ -40,11 +44,11 @@ class DoodleHistoryEngine:
         self.conn = sqlite3.connect("combinations.db")
         self.cursor = self.conn.cursor()
 
-        self.cursor.execute("SELECT name FROM items WHERE is_goal = TRUE")
-        self.target_elems = [x[0] for x in self.cursor.fetchall()]
-
-        self.cursor.execute("SELECT name FROM items WHERE is_guide = TRUE")
-        self.guide_elems = [x[0] for x in self.cursor.fetchall()]
+        self.cursor.execute("SELECT name, is_base, is_guide, is_goal FROM items")
+        self.base_elems = [x[0] for x in self.cursor.fetchall() if x[1]]
+        self.guide_elems = [x[0] for x in self.cursor.fetchall() if x[2]]
+        self.target_elems = [x[0] for x in self.cursor.fetchall() if x[3]]
+        self.other_elems = [x[0] for x in self.cursor.fetchall() if not any(x[1:])]
 
     def close(self):
         self.conn.close()
@@ -67,7 +71,7 @@ class DoodleHistoryEngine:
             model="gemini-1.5-flash",
             contents=user_prompt,
             config={
-                "system_instruction": system_prompt.format(self.target_elems, self.guide_elems),
+                "system_instruction": system_prompt.format(self.target_elems, self.guide_elems, self.other_elems, self.base_elems),
                 "response_mime_type": "application/json",
                 "response_schema": ComboResult
             }
@@ -91,6 +95,8 @@ class DoodleHistoryEngine:
         result = result_obj.result
         result_id = None
         if result:
+            if result not in self.other_elems:
+                self.other_elems.append(result)
             self.cursor.execute("INSERT OR IGNORE INTO items (name) VALUES (?)", (result,))
             self.cursor.execute("SELECT id FROM items WHERE name = ?", (result,))
             result_id = self.cursor.fetchone()[0]

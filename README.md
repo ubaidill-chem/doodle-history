@@ -23,5 +23,3 @@ The project consists of three main Python files:
 - SQLite3 (built-in with Python)
 - Google Generative AI SDK (`google-genai`)
 - Pydantic
-
-Install dependencies via pip:
