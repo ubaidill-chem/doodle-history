@@ -22,7 +22,7 @@ Rules:
 3. If there is a connection, look at the `Milestones` list. If the result logically matches or heavily aligns with a target, you MUST output the exact name of that target.
 4. If a valid historical result exists but does NOT trigger a `Milestone`, look at the `Guides` list. If it strongly aligns with an item in that list, output that exact name of that item.
 5. If a valid historical result exists but does NOT match the `Guides` either, look at the `Existing Universe`. If it is a direct synonym, plural, or functionally identical concept to an item on that list, output that exact name of that item.
-6. If a valid historical result exists and it matches one of the `Base Items` instead, do NOT default to that item. Instead, think of another concept and repeat from step 1.
+6. If a valid historical result exists and it matches one of the `Base Items`, do NOT default to that item. Instead, think of another concept and repeat from step 1.
 7. If a valid historical result exists but is historically distinct from everything in the lists above, output a short, accurate 1-3 word name for the new concept.
 
 If a valid historical result exists, also return a one sentence description or justification of why that result was choosen.
