@@ -16,19 +16,23 @@ guide_elems = [x[0] for x in cursor.fetchall()]
 
 client = genai.Client()
 
-system_prompt = f"""System: You are an expert historian running a 20th-century logic game. The user will combine two concepts Input A and Input B.
-Milestone Targets: {target_elems}
-Available Items: {guide_elems}
+system_prompt = f"""System: You are an expert historian running a 20th-century logic game. The user will combine two concepts, Input A and Input B.
+Available Targets: ```json
+{{
+"Milestones": {target_elems}
+"Guides": {guide_elems}
+}}
+```
 
 Rules:
 1. Determine if combining Input A and Input B results in a historically accurate event, concept, or invention.
 2. If there is NO historical or logical connection, you must return null.
-3. If there is a connection, look at the Milestone Targets. If the result logically matches or heavily aligns with a target, you MUST output the exact name of that target.
-4. If a valid historical result exists but does NOT trigger a Milestone, look at the Available Items. If it strongly aligns with an item in that list, output that exact name of that item.
+3. If there is a connection, look at the `Milestones` list. If the result logically matches or heavily aligns with a target, you MUST output the exact name of that target.
+4. If a valid historical result exists but does NOT trigger a `Milestone`, look at the `Guides` list. If it strongly aligns with an item in that list, output that exact name of that item.
 5. If a valid historical result exists but does NOT match any available items, output a short, accurate 1-3 word name for the new concept.
 6. If a valid historical result exists, also return a one sentence description or justification of why that result was choosen.
 
-Output format: JSON only. {{"result": "Output Name", "desc": "Description or justification"}} or {{"result": null, "desc": null}}"""
+Output format: JSON only. `{{"result": "Output Name", "desc": "Description"}}` or `{{"result": null, "desc": null}}`"""
 
 
 class CombResult(BaseModel):
