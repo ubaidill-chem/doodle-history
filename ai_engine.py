@@ -8,35 +8,36 @@ from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_ex
 
 client = genai.Client()
 
-system_prompt = """System: You are an expert historian running a 20th-century logic game. The user will combine two concepts, Input A and Input B.
-Available targets: ```json
-{{
-"Milestones": {}
-"Guides": {}
-"Existing Universe": {}
-}}
-```
-Base Items: `{}`
+system_prompt = """You are an expert historian. You analyze history through the interaction of material conditions, economics, and power structures.
 
-Rules:
-1. Determine if combining Input A and Input B results in a historically accurate event, concept, or invention.
-2. If there is NO historical or logical connection, you must return null.
-3. *Pacing*: Do not skip logical intermediate steps. Do NOT leap to highly specific events or modern inventions unless the inputs are specific enough to justify it.
-4. If a valid historical result exists and it follows the pacing rule,, look at the `Milestones` list. If the result logically matches or heavily aligns with a target, you MUST output the exact name of that target.
-5. If a valid historical result exists but does NOT trigger a `Milestone`, look at the `Guides` list. If it strongly aligns with an item in that list, output that exact name of that item.
-6. If a valid historical result exists but does NOT match the `Guides` either, look at the `Existing Universe`. If it is a direct synonym, plural, or functionally identical concept to an item on that list, output that exact name of that item.
-7. a valid historical result exists but is historically distinct from everything in the lists above, output a short, accurate 1-3 word name for the new concept.
-8. If a combination feels too generic or repetitive, try to find a more specific, technical, or localized historical term.
+## Game context
+Milestones (primary goals): {milestones}
+Guides (intermediate stepping stones): {guides}
+Base items (always available): {base}
 
-If a valid historical result exists, also return 
-- `desc`: A brief, punchy historical connection (maximum 15 words).
-- `meta`: Your meta thought process considering the greater scheme of the game such as how your choosen result will interact with the `Existing Universe` or help the player reach the `Milestones`.
-Output format: JSON only. `{{"result": "Output Name", "desc": "Description", "meta": "Thought"}}` or `{{"result": null, "desc": null, "meta": null}}`"""
+## Combination logic
+Given two input items, determine the single most historically coherent result.
+
+Priority order:
+1. If the result is an exact or near-exact match to a Milestone, return the Milestone name verbatim.
+2. Else if the result maps to a Guide, return the Guide name verbatim.
+3. Else if a strong causal or thematic link exists, generate a 1–3 word historical concept. The link must be direct — no chronological leaps. Intermediate concepts must be discoverable before their dependents.
+4. Else return null.
+
+Analytical lens: Favor results that reveal how material conditions (land, labor, resources), capital formation, and social structures interact to produce historical outcomes.
+
+## Output format
+JSON only. No explanation outside the JSON object.
+{"result": string|null, "desc": string|null, "meta": string|null}
+
+- `result`: The output item name, or null.
+- `desc`: Max 15 words. A punchy causal connection. Null if result is null.  
+- `meta`: One sentence. How this item connects to other discoverable items or game goals. Null if result is null."""
 
 
 class ComboResult(BaseModel):
     result: Optional[str] = None
-    desc: Optional[str] = Field(default=None, description="A brief, punchy historical connection (maximum 15 words).")
+    desc: Optional[str] = Field(default=None, description="A brief, punchy causal connection (maximum 15 words).")
     meta: Optional[str] = Field(default=None, description="Meta thought process on how this result would work with other items or the goals of the game.")
 
 
@@ -55,7 +56,6 @@ class DoodleHistoryEngine:
             self.base_elems = [x[0] for x in rows if x[1]]
             self.guide_elems = [x[0] for x in rows if x[2]]
             self.goal_elems = [x[0] for x in rows if x[3]]
-            self.other_elems = [x[0] for x in rows if not any(x[1:])]
 
     def _try_combine(self, cursor: sqlite3.Cursor, item1_id: int, item2_id: int) -> DBResult:
         cursor.execute("""
@@ -76,7 +76,7 @@ class DoodleHistoryEngine:
             model="gemini-3-flash-preview",
             contents=user_prompt,
             config={
-                "system_instruction": system_prompt.format(self.goal_elems, self.guide_elems, self.other_elems, self.base_elems),
+                "system_instruction": system_prompt.format(self.goal_elems, self.guide_elems, self.base_elems),
                 "response_mime_type": "application/json",
                 "response_schema": ComboResult
             }
@@ -103,8 +103,6 @@ class DoodleHistoryEngine:
             result = result_obj.result
             result_id = None
             if result:
-                if result not in self.other_elems:
-                    self.other_elems.append(result)
                 cursor.execute("INSERT OR IGNORE INTO items (name) VALUES (?)", (result,))
                 cursor.execute("SELECT id FROM items WHERE name = ?", (result,))
                 result_id = cursor.fetchone()[0]

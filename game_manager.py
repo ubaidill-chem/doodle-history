@@ -15,9 +15,8 @@ class DoodleHistoryGame:
         self.base: set[str] = set(engine.base_elems)
         self.goal: set[str] = set(engine.goal_elems)
         self.guide: set[str] = set(engine.guide_elems)
-        self.other: set[str] = set(engine.other_elems)
 
-        self.is_obtained: dict[str, bool] = {x: False for x in self.base | self.goal | self.guide | self.other}
+        self.is_obtained: dict[str, bool] = {x: False for x in self.base | self.goal | self.guide}
         self.reset()
         
     @property
