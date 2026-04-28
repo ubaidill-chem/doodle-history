@@ -56,8 +56,6 @@ class DoodleHistoryTkinter:
         self.combine = tk.Button(desk, text="Combine", command=self._on_click_combine, state="disabled")
         self.combine.pack()
 
-        self.root.protocol("WM_DELETE_WINDOW", self._on_close)
-
     def _reset_game(self):
         self.mixing.set("Select two elements and combine them")
         for items in self.item_lists:
@@ -126,10 +124,6 @@ class DoodleHistoryTkinter:
             to_update.set(list(to_update.get()) + [result])
 
         self.root.config(cursor="")
-        
-    def _on_close(self):
-        self.game.close()
-        self.root.destroy()
 
 
 if __name__ == "__main__":

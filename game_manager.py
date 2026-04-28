@@ -19,9 +19,6 @@ class DoodleHistoryGame:
 
         self.is_obtained: dict[str, bool] = {x: False for x in self.base | self.goal | self.guide | self.other}
         self.reset()
-
-    def close(self):
-        self.engine.close()
         
     @property
     def obtained(self) -> set[str]:
