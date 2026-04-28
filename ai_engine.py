@@ -7,14 +7,14 @@ from pydantic import BaseModel, Field
 client = genai.Client()
 
 system_prompt = """System: You are an expert historian running a 20th-century logic game. The user will combine two concepts, Input A and Input B.
-Available Targets: ```json
+Available targets: ```json
 {
-"Milestones": {target_elems}
+"Milestones": {goal_elems}
 "Guides": {guide_elems}
 "Existing Universe": {other_elems}
 }
 ```
-Base Items: {base_elems}
+Base Items: `{base_elems}`
 
 Rules:
 1. Determine if combining Input A and Input B results in a historically accurate event, concept, or invention.
@@ -25,13 +25,16 @@ Rules:
 6. If a valid historical result exists and it matches one of the `Base Items`, do NOT default to that item. Instead, think of another concept and repeat from step 1.
 7. If a valid historical result exists but is historically distinct from everything in the lists above, output a short, accurate 1-3 word name for the new concept.
 
-If a valid historical result exists, also return a one sentence description or justification of why that result was choosen.
-Output format: JSON only. `{"result": "Output Name", "desc": "Description"}` or `{"result": null, "desc": null}`"""
+If a valid historical result exists, also return 
+- `desc`: A one sentence description or justification of why that result was choosen in terms of history and combination logic.
+- `meta`: Your meta thought process considering the greater scheme of the game such as how your choosen result will interact with the `Existing Universe` or help the player reach the `Milestones`.
+Output format: JSON only. `{"result": "Output Name", "desc": "Description", "meta": "Thought"` or `{"result": null, "desc": null, "meta": null}`"""
 
 
 class ComboResult(BaseModel):
     result: Optional[str] = None
-    desc: Optional[str] = Field(default=None, description="One sentence of description or justification of the combination result")
+    desc: Optional[str] = Field(default=None, description="One sentence of description or justification for the combination result based on historical logic")
+    meta: Optional[str] = Field(default=None, description="Meta thought process on how this result would work with other items or the goals of the game")
 
 
 class DBResult(NamedTuple):
@@ -47,7 +50,7 @@ class DoodleHistoryEngine:
         self.cursor.execute("SELECT name, is_base, is_guide, is_goal FROM items")
         self.base_elems = [x[0] for x in self.cursor.fetchall() if x[1]]
         self.guide_elems = [x[0] for x in self.cursor.fetchall() if x[2]]
-        self.target_elems = [x[0] for x in self.cursor.fetchall() if x[3]]
+        self.goal_elems = [x[0] for x in self.cursor.fetchall() if x[3]]
         self.other_elems = [x[0] for x in self.cursor.fetchall() if not any(x[1:])]
 
     def close(self):
@@ -71,7 +74,7 @@ class DoodleHistoryEngine:
             model="gemini-1.5-flash",
             contents=user_prompt,
             config={
-                "system_instruction": system_prompt.format(self.target_elems, self.guide_elems, self.other_elems, self.base_elems),
+                "system_instruction": system_prompt.format(self.goal_elems, self.guide_elems, self.other_elems, self.base_elems),
                 "response_mime_type": "application/json",
                 "response_schema": ComboResult
             }
@@ -102,8 +105,8 @@ class DoodleHistoryEngine:
             result_id = self.cursor.fetchone()[0]
 
         self.cursor.execute(
-            "INSERT OR IGNORE INTO recipe (item1_id, item2_id, result_id, desc) VALUES (?, ?, ?, ?)", 
-            (item1_id, item2_id, result_id, result_obj.desc)
+            "INSERT OR IGNORE INTO recipe (item1_id, item2_id, result_id, desc, meta) VALUES (?, ?, ?, ?, ?)", 
+            (item1_id, item2_id, result_id, result_obj.desc, result_obj.meta)
         )
 
         self.conn.commit()
