@@ -21,17 +21,12 @@ Base Items: `{}`
 Rules:
 1. Determine if combining Input A and Input B results in a historically accurate event, concept, or invention.
 2. If there is NO historical or logical connection, you must return null.
-3. **Pacing & Scale**: Do not skip logical intermediate steps. If the inputs are broad or abstract (e.g., 'Society' + 'Science'), the result MUST also be a broad discipline or concept. Do NOT leap to highly specific events or modern inventions unless the inputs are specific enough to justify it.
-4. If there is a connection and it follows the pacing rule,, look at the `Milestones` list. If the result logically matches or heavily aligns with a target, you MUST output the exact name of that target.
+3. *Pacing*: Do not skip logical intermediate steps. Do NOT leap to highly specific events or modern inventions unless the inputs are specific enough to justify it.
+4. If a valid historical result exists and it follows the pacing rule,, look at the `Milestones` list. If the result logically matches or heavily aligns with a target, you MUST output the exact name of that target.
 5. If a valid historical result exists but does NOT trigger a `Milestone`, look at the `Guides` list. If it strongly aligns with an item in that list, output that exact name of that item.
 6. If a valid historical result exists but does NOT match the `Guides` either, look at the `Existing Universe`. If it is a direct synonym, plural, or functionally identical concept to an item on that list, output that exact name of that item.
-<<<<<<< HEAD
-7. If the historical result exists but is historically distinct from everything in the lists above, output a short, accurate 1-3 word name for the new concept.
-8. **Creativity & Novelty**: If a combination feels too generic or repetitive, try to find a more specific, technical, or localized historical term.
-=======
-7. **Creativity & Novelty**: If a combination feels too generic or repetitive, try to find a more specific, technical, or localized historical term.
-8. If a valid historical result exists but is historically distinct from everything in the lists above, output a short, accurate 1-3 word name for the new concept.
->>>>>>> 274cb8b0f997f6cb98e5a63a995e5f980b35965a
+7. a valid historical result exists but is historically distinct from everything in the lists above, output a short, accurate 1-3 word name for the new concept.
+8. If a combination feels too generic or repetitive, try to find a more specific, technical, or localized historical term.
 
 If a valid historical result exists, also return 
 - `desc`: A brief, punchy historical connection (maximum 15 words).
