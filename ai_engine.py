@@ -2,39 +2,42 @@ import sqlite3
 from typing import NamedTuple, Optional
 
 from google import genai
+from google.genai.errors import ServerError
 from pydantic import BaseModel, Field
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 client = genai.Client()
 
 system_prompt = """System: You are an expert historian running a 20th-century logic game. The user will combine two concepts, Input A and Input B.
 Available targets: ```json
-{
-"Milestones": {goal_elems}
-"Guides": {guide_elems}
-"Existing Universe": {other_elems}
-}
+{{
+"Milestones": {}
+"Guides": {}
+"Existing Universe": {}
+}}
 ```
-Base Items: `{base_elems}`
+Base Items: `{}`
 
 Rules:
 1. Determine if combining Input A and Input B results in a historically accurate event, concept, or invention.
 2. If there is NO historical or logical connection, you must return null.
-3. If there is a connection, look at the `Milestones` list. If the result logically matches or heavily aligns with a target, you MUST output the exact name of that target.
-4. If a valid historical result exists but does NOT trigger a `Milestone`, look at the `Guides` list. If it strongly aligns with an item in that list, output that exact name of that item.
-5. If a valid historical result exists but does NOT match the `Guides` either, look at the `Existing Universe`. If it is a direct synonym, plural, or functionally identical concept to an item on that list, output that exact name of that item.
-6. If a valid historical result exists and it matches one of the `Base Items`, do NOT default to that item. Instead, think of another concept and repeat from step 1.
-7. If a valid historical result exists but is historically distinct from everything in the lists above, output a short, accurate 1-3 word name for the new concept.
+3. **Pacing & Scale**: Do not skip logical intermediate steps. If the inputs are broad or abstract (e.g., 'Society' + 'Science'), the result MUST also be a broad discipline or concept. Do NOT leap to highly specific events or modern inventions unless the inputs are specific enough to justify it.
+4. If there is a connection and it follows the pacing rule,, look at the `Milestones` list. If the result logically matches or heavily aligns with a target, you MUST output the exact name of that target.
+5. If a valid historical result exists but does NOT trigger a `Milestone`, look at the `Guides` list. If it strongly aligns with an item in that list, output that exact name of that item.
+6. If a valid historical result exists but does NOT match the `Guides` either, look at the `Existing Universe`. If it is a direct synonym, plural, or functionally identical concept to an item on that list, output that exact name of that item.
+7. **Creativity & Novelty**: If a combination feels too generic or repetitive, try to find a more specific, technical, or localized historical term.
+8. If a valid historical result exists but is historically distinct from everything in the lists above, output a short, accurate 1-3 word name for the new concept.
 
 If a valid historical result exists, also return 
-- `desc`: A one sentence description or justification of why that result was choosen in terms of history and combination logic.
+- `desc`: A brief, punchy historical connection (maximum 15 words).
 - `meta`: Your meta thought process considering the greater scheme of the game such as how your choosen result will interact with the `Existing Universe` or help the player reach the `Milestones`.
-Output format: JSON only. `{"result": "Output Name", "desc": "Description", "meta": "Thought"` or `{"result": null, "desc": null, "meta": null}`"""
+Output format: JSON only. `{{"result": "Output Name", "desc": "Description", "meta": "Thought"}}` or `{{"result": null, "desc": null, "meta": null}}`"""
 
 
 class ComboResult(BaseModel):
     result: Optional[str] = None
-    desc: Optional[str] = Field(default=None, description="One sentence of description or justification for the combination result based on historical logic")
-    meta: Optional[str] = Field(default=None, description="Meta thought process on how this result would work with other items or the goals of the game")
+    desc: Optional[str] = Field(default=None, description="A brief, punchy historical connection (maximum 15 words).")
+    meta: Optional[str] = Field(default=None, description="Meta thought process on how this result would work with other items or the goals of the game.")
 
 
 class DBResult(NamedTuple):
@@ -56,7 +59,7 @@ class DoodleHistoryEngine:
 
     def _try_combine(self, cursor: sqlite3.Cursor, item1_id: int, item2_id: int) -> DBResult:
         cursor.execute("""
-            SELECT items.name recipe.desc recipe.meta
+            SELECT items.name, recipe.desc, recipe.meta
             FROM recipe
             LEFT JOIN items ON recipe.result_id = items.id
             WHERE recipe.item1_id = ? AND recipe.item2_id = ?
@@ -66,10 +69,11 @@ class DoodleHistoryEngine:
             return DBResult(True, ComboResult(result=row[0], desc=row[1], meta=row[2]))
         return DBResult(False, ComboResult())
 
+    @retry(wait=wait_exponential(multiplier=1, min=2, max=10), stop=stop_after_attempt(4), retry=retry_if_exception_type(ServerError))
     def _prompt_genai(self, item1: str, item2: str) -> ComboResult:
         user_prompt = f"Combine {item1} and {item2}"
         response = client.models.generate_content(
-            model="gemini-1.5-flash",
+            model="gemini-3.1-flash-lite-preview",
             contents=user_prompt,
             config={
                 "system_instruction": system_prompt.format(self.goal_elems, self.guide_elems, self.other_elems, self.base_elems),
@@ -77,10 +81,11 @@ class DoodleHistoryEngine:
                 "response_schema": ComboResult
             }
         )
-        return response.parsed # type: ignore
+        result: ComboResult = response.parsed # type: ignore
+        return result
 
     def combine(self, item1: str, item2: str) -> ComboResult:
-        with sqlite3.connect("connections.db") as conn:
+        with sqlite3.connect("combinations.db") as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT id FROM items WHERE name = ?", (item1,))
             item1_id = cursor.fetchone()[0]
