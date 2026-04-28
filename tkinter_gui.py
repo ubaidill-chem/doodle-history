@@ -86,7 +86,7 @@ class DoodleHistoryTkinter:
     
     def _on_click_combine(self):
         self.log_txt.config(state="normal")
-        self.log_txt.insert(tk.END ,"Thinking...\n")
+        self.log_txt.insert(tk.END ,"Thinking...")
         self.log_txt.config(state="disabled")
 
         self.root.config(cursor="watch")
@@ -102,25 +102,30 @@ class DoodleHistoryTkinter:
     
     def _post_combine(self, result_obj: ComboResult):
         result, desc, is_new, is_goal = result_obj
-        tag = "null" if not result else ("goal" if is_goal else "")
-
-        if self.log_txt.get("end-2c linestart", "lineend").strip() == "Thinking...\n":
-            self.log_txt.delete("end-2c linestart", tk.END)
-
+        tag = "goal" if is_goal else ("null" if not result else "")
         if not (self.item1 and self.item2):
             raise ValueError("Both items must be selected before combining")
         
         self.log_txt.config(state="normal")
+
+        current_text = self.log_txt.get("1.0", tk.END)
+        if current_text.endswith("Thinking...\n"):
+            self.log_txt.delete("end-2l", tk.END)
+            self.log_txt.insert(tk.END, "\n")
+
         self.log_txt.insert(tk.END, f"{self.item1} + {self.item2} = ")
-        self.log_txt.insert(tk.END, result or "XXX", tag)
+        self.log_txt.insert(tk.END, result or "XXX" + "\n", tag)
+        if is_new and desc:
+            self.log_txt.insert(tk.END, desc + "\n\n")
+
         self.log_txt.config(state="disabled")
 
         self.mixing.set(f"{self.item1} + {self.item2} = {result or "XXX"}")
-        if is_new:
+        if is_new and result:
             to_update = min(self.item_lists, key=lambda var: len(tuple(var.get())))
             to_update.set(list(to_update.get()) + [result])
-            if desc:
-                self.log_txt.insert(tk.END, desc + "\n\n")
+
+        self.root.config(cursor="")
         
     def _on_close(self):
         self.game.close()
