@@ -22,11 +22,13 @@ class DoodleHistoryGame:
         
     @property
     def obtained(self) -> set[str]:
-        return {elem for elem, is_obtained in self.is_obtained.items() if is_obtained}
+        obtained = {elem for elem, is_obtained in self.is_obtained.items() if is_obtained}
+        return obtained
     
     @property
     def progress(self):
-        return len(self.goal & self.obtained) / len(self.goal)
+        prog = len(self.goal & self.obtained) / len(self.goal)
+        return prog
     
     def reset(self):
         for base in self.base:
@@ -39,7 +41,7 @@ class DoodleHistoryGame:
 
         new_elem = False
         did_obtain_goal = False
-        if result and not result not in self.obtained:
+        if result and result not in self.obtained:
             self.is_obtained[result] = True
             new_elem = True
             did_obtain_goal = (result in self.goal)

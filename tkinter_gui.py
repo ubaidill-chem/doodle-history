@@ -3,6 +3,8 @@ import tkinter as tk
 from tkinter import ttk
 from typing import Optional
 
+from tenacity import RetryError
+
 from game_manager import ComboResult, DoodleHistoryGame
 
 
@@ -20,7 +22,7 @@ class DoodleHistoryTkinter:
 
     def _draw_gui(self):
         self.root.title("Doodle History")
-        self.root.geometry("600x450")
+        self.root.geometry("700x450")
 
         inventory = tk.Frame(self.root)
         inventory.pack(side="left", fill="y")
@@ -33,14 +35,14 @@ class DoodleHistoryTkinter:
             listbox.bind("<<ListboxSelect>>", self._select)
 
         desk = tk.Frame(self.root)
-        desk.pack(side="right", fill="y")
+        desk.pack(side="right", fill="both", expand=True)
         tk.Label(desk, text="Combination History").pack()
 
         log = tk.Frame(desk)
         log.pack(fill="both", expand=True)
 
         self.log_txt = tk.Text(log, state="disabled", wrap="word")
-        self.log_txt.pack(side="left", fill="y")
+        self.log_txt.pack(side="left", fill="both", expand=True)
 
         self.log_txt.tag_config("null", foreground="red")
         self.log_txt.tag_config("goal", foreground="gold")
@@ -85,6 +87,7 @@ class DoodleHistoryTkinter:
     def _on_click_combine(self):
         self.log_txt.config(state="normal")
         self.log_txt.insert(tk.END ,"Thinking...")
+        self.log_txt.see(tk.END)
         self.log_txt.config(state="disabled")
 
         self.root.config(cursor="watch")
@@ -95,8 +98,12 @@ class DoodleHistoryTkinter:
     def _combine(self):
         if not (self.item1 and self.item2):
             raise ValueError("Both items must be selected before combining")
-        result_obj = self.game.combine(self.item1, self.item2)
-        self.root.after(0, lambda: self._post_combine(result_obj))
+        
+        try:
+            result_obj = self.game.combine(self.item1, self.item2)
+            self.root.after(0, lambda: self._post_combine(result_obj))
+        except Exception as e:
+            self.root.after(0, lambda err=e: self._handle_error(err))
     
     def _post_combine(self, result_obj: ComboResult):
         result, desc, is_new, is_goal = result_obj
@@ -106,33 +113,38 @@ class DoodleHistoryTkinter:
         
         self.log_txt.config(state="normal")
 
-        current_text = self.log_txt.get("1.0", tk.END)
-        if current_text.endswith("Thinking...\n"):
-            self.log_txt.delete("end-2l", tk.END)
-            self.log_txt.insert(tk.END, "\n")
+        if self.log_txt.get("1.0", tk.END).endswith("Thinking...\n"):
+            self.log_txt.delete("end-12c", "end-1c")
 
         self.log_txt.insert(tk.END, f"{self.item1} + {self.item2} = ")
-        self.log_txt.insert(tk.END, result or "XXX" + "\n", tag)
+        self.log_txt.insert(tk.END, (result or "XXX") + "\n", tag)
         if is_new and desc:
             self.log_txt.insert(tk.END, desc + "\n\n")
 
+        self.log_txt.see(tk.END)
         self.log_txt.config(state="disabled")
 
         self.mixing.set(f"{self.item1} + {self.item2} = {result or "XXX"}")
         if is_new and result:
-            to_update = min(self.item_lists, key=lambda var: len(tuple(var.get())))
-            to_update.set(list(to_update.get()) + [result])
+            items = self.item_lists[(len(self.game.obtained) - 1) % self.n_col]
+            items.set(list(items.get()) + [result])
 
         self.root.config(cursor="")
 
+    def _handle_error(self, error):
+        self.log_txt.config(state="normal")
 
-if __name__ == "__main__":
-    from ai_engine import DoodleHistoryEngine
+        if self.log_txt.get("1.0", tk.END).endswith("Thinking...\n"):
+            self.log_txt.delete("end-12c", "end-1c")
 
-    root = tk.Tk()
-    engine = DoodleHistoryEngine()
-    game = DoodleHistoryGame(engine)
+        if isinstance(error, RetryError):
+            error = error.last_attempt.exception()
 
-    DoodleHistoryTkinter(root, game)
+        self.log_txt.insert(tk.END, f"API Error: {str(error)[:50]}\n", "null")
+        
+        self.log_txt.see(tk.END)
+        self.log_txt.config(state="disabled")
 
-    root.mainloop()
+        print(error)
+        self.root.config(cursor="")
+        self.combine.config(state="active")
