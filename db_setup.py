@@ -2,7 +2,7 @@ import sqlite3
 
 with open('data.csv', mode='r', encoding='utf-8-sig') as f:
     base_elems = [(x,) for x in f.readline().strip('\n').split(',') if x]
-    target_elems = [(x,) for x in f.readline().strip('\n').split(',') if x]
+    goal_elems = [(x,) for x in f.readline().strip('\n').split(',') if x]
     guide_elems = [(x,) for line in f.readlines() for x in line.strip('\n').split(',') if x]
 
 conn = sqlite3.connect('combinations.db')
@@ -23,6 +23,7 @@ cursor.execute("""
         item2_id INTEGER NOT NULL CHECK (item2_id >= item1_id),
         result_id INTEGER,
         desc TEXT,
+        meta TEXT,
         FOREIGN KEY (item1_id) REFERENCES items(id)
         FOREIGN KEY (item2_id) REFERENCES items(id)
         FOREIGN KEY (result_id) REFERENCES items(id)
@@ -31,7 +32,7 @@ cursor.execute("""
 """)
 
 cursor.executemany("INSERT OR IGNORE INTO items (name, is_base) VALUES (?, TRUE)", base_elems)
-cursor.executemany("INSERT OR IGNORE INTO items (name, is_goal) VALUES (?, TRUE)", target_elems)
+cursor.executemany("INSERT OR IGNORE INTO items (name, is_goal) VALUES (?, TRUE)", goal_elems)
 cursor.executemany("INSERT OR IGNORE INTO items (name, is_guide) VALUES (?, TRUE)", guide_elems)
 
 conn.commit()

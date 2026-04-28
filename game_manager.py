@@ -13,11 +13,11 @@ class DoodleHistoryGame:
     def __init__(self, engine: DoodleHistoryEngine):
         self.engine = engine
         self.base: set[str] = set(engine.base_elems)
-        self.target: set[str] = set(engine.target_elems)
+        self.goal: set[str] = set(engine.goal_elems)
         self.guide: set[str] = set(engine.guide_elems)
         self.other: set[str] = set(engine.other_elems)
 
-        self.is_obtained: dict[str, bool] = {x: False for x in self.base | self.target | self.guide | self.other}
+        self.is_obtained: dict[str, bool] = {x: False for x in self.base | self.goal | self.guide | self.other}
         self.reset()
 
     def close(self):
@@ -29,7 +29,7 @@ class DoodleHistoryGame:
     
     @property
     def progress(self):
-        return len(self.target & self.obtained) / len(self.target)
+        return len(self.goal & self.obtained) / len(self.goal)
     
     def reset(self):
         for base in self.base:
@@ -45,6 +45,6 @@ class DoodleHistoryGame:
         if result and not result not in self.obtained:
             self.is_obtained[result] = True
             new_elem = True
-            did_obtain_goal = (result in self.target)
+            did_obtain_goal = (result in self.goal)
         
         return ComboResult(result, desc, new_elem, did_obtain_goal)
