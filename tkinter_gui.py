@@ -64,7 +64,7 @@ class DoodleHistoryTkinter:
             items.set(list())
 
         self.game.reset()
-        for i, elem in enumerate(sorted(self.game.obtained)):
+        for i, elem in enumerate(self.game.obtained):
             items = self.item_lists[i % self.n_col]
             items.set(list(items.get()) + [elem])
 

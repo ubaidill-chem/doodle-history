@@ -10,33 +10,37 @@ class ComboResult(NamedTuple):
     did_obtain_goal: bool
 
 class DoodleHistoryGame:
-    def __init__(self, engine: DoodleHistoryEngine):
+    def __init__(self, engine: DoodleHistoryEngine, *, debug=False):
         self.engine = engine
-        self.base: set[str] = set(engine.base_elems)
-        self.goal: set[str] = set(engine.goal_elems)
-        self.guide: set[str] = set(engine.guide_elems)
+        self.debug = debug
+        self.base: list[str] = engine.base_elems
+        self.goal: list[str] = engine.goal_elems
+        self.guide: list[str] = engine.guide_elems
 
-        self.is_obtained: dict[str, bool] = {x: False for x in self.base | self.goal | self.guide}
+        self.is_obtained: dict[str, bool] = {x: False for x in self.base + self.goal + self.guide}
         self.reset()
         
     @property
-    def obtained(self) -> set[str]:
-        obtained = {elem for elem, is_obtained in self.is_obtained.items() if is_obtained}
+    def obtained(self) -> list[str]:
+        obtained = [elem for elem, is_obtained in self.is_obtained.items() if is_obtained]
         return obtained
     
     @property
     def progress(self):
-        prog = len(self.goal & self.obtained) / len(self.goal)
+        prog = len(set(self.goal) & set(self.obtained)) / len(self.goal)
         return prog
     
     def reset(self):
         for base in self.base:
             self.is_obtained[base] = True
+        if self.debug:
+            for res in self.engine._get_recipe_results():
+                self.is_obtained[res[0]] = True
 
     def combine(self, item1: str, item2: str) -> ComboResult:
-        result_obj = self.engine.combine(item1, item2)
-        result = result_obj.result
-        desc = result_obj.desc
+        result_dict = self.engine.combine(list(self.obtained), item1, item2)
+        result = result_dict["result"]
+        desc = result_dict["desc"]
 
         new_elem = False
         did_obtain_goal = False
