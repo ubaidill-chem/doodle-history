@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import sqlite3
 
@@ -62,7 +64,7 @@ def create_tables():
         """)
         conn.execute("""
             CREATE VIRTUAL TABLE IF NOT EXISTS item_embeds USING vec0(
-                name TEXT,
+                name TEXT UNIQUE,
                 embed FLOAT[768] distance_metric=cosine
             );
         """)
@@ -81,5 +83,5 @@ def create_tables():
     embed_and_store([x[0] for x in base_elems + goal_elems + guide_elems])
 
 
-if __name__ == "__main__":
+if not os.path.exists("combinations.db"):
     create_tables()

@@ -4,6 +4,8 @@ from ai_engine import DoodleHistoryEngine
 
 
 class ComboResult(NamedTuple):
+    item1: str
+    itee2: str
     result: Optional[str]
     desc: Optional[str]
     new_elem: bool
@@ -13,6 +15,7 @@ class DoodleHistoryGame:
     def __init__(self, engine: DoodleHistoryEngine, *, debug=False):
         self.engine = engine
         self.debug = debug
+
         self.base: list[str] = engine.base_elems
         self.goal: list[str] = engine.goal_elems
         self.guide: list[str] = engine.guide_elems
@@ -49,4 +52,4 @@ class DoodleHistoryGame:
             new_elem = True
             did_obtain_goal = (result in self.goal)
         
-        return ComboResult(result, desc, new_elem, did_obtain_goal)
+        return ComboResult(item1, item2, result, desc, new_elem, did_obtain_goal)

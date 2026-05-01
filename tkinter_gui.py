@@ -12,13 +12,31 @@ class DoodleHistoryTkinter:
     def __init__(self, root: tk.Tk, game: DoodleHistoryGame, *, n_col: int = 2) -> None:
         self.root = root
         self.n_col = n_col
-
         self.game = game
+        
         self.item1: Optional[str] = None
         self.item2: Optional[str] = None
+        self.thinking = False
 
         self._draw_gui()
         self._reset_game()
+
+    def toggle_thinking(self):
+        self.thinking = not self.thinking
+        self.log_txt.config(state="normal")
+
+        if self.thinking:
+            self.log_txt.insert(tk.END, "Thinking...")
+            self.log_txt.see(tk.END)
+            self.root.config(cursor="watch")
+            self.combine.config(state="disabled")
+        else:
+            if self.log_txt.get("1.0", tk.END).endswith("Thinking...\n"):
+                self.log_txt.delete("end-12c", "end-1c")
+            self.root.config(cursor="")
+            self.combine.config(state="active")
+        
+        self.log_txt.config(state="disabled")
 
     def _draw_gui(self):
         self.root.title("Doodle History")
@@ -69,9 +87,13 @@ class DoodleHistoryTkinter:
             items.set(list(items.get()) + [elem])
 
     def _select(self, event):
+        if self.thinking:
+            return
+        
         lb: tk.Listbox = event.widget
         if not (selection := lb.curselection()):
             return
+        
         item: str = lb.get(selection[0])
         if self.item1 is None:
             self.item1 = item
@@ -85,13 +107,7 @@ class DoodleHistoryTkinter:
         self.combine.config(state="active" if self.item1 and self.item2 else "disabled")
     
     def _on_click_combine(self):
-        self.log_txt.config(state="normal")
-        self.log_txt.insert(tk.END ,"Thinking...")
-        self.log_txt.see(tk.END)
-        self.log_txt.config(state="disabled")
-
-        self.root.config(cursor="watch")
-        self.combine.config(state="disabled")
+        self.toggle_thinking()
         t = Thread(target=self._combine, daemon=True)
         t.start()
 
@@ -106,45 +122,35 @@ class DoodleHistoryTkinter:
             self.root.after(0, lambda err=e: self._handle_error(err))
     
     def _post_combine(self, result_obj: ComboResult):
-        result, desc, is_new, is_goal = result_obj
+        item1, item2, result, desc, is_new, is_goal = result_obj
         tag = "goal" if is_goal else ("null" if not result else "")
-        if not (self.item1 and self.item2):
-            raise ValueError("Both items must be selected before combining")
-        
+        self.toggle_thinking()
+
         self.log_txt.config(state="normal")
 
-        if self.log_txt.get("1.0", tk.END).endswith("Thinking...\n"):
-            self.log_txt.delete("end-12c", "end-1c")
-
-        self.log_txt.insert(tk.END, f"{self.item1} + {self.item2} = ")
+        self.log_txt.insert(tk.END, f"{item1} + {item2} = ")
         self.log_txt.insert(tk.END, (result or "XXX") + "\n", tag)
         if is_new and desc:
             self.log_txt.insert(tk.END, desc + "\n\n")
 
-        self.log_txt.see(tk.END)
         self.log_txt.config(state="disabled")
+        self.log_txt.see(tk.END)
 
-        self.mixing.set(f"{self.item1} + {self.item2} = {result or "XXX"}")
+        self.mixing.set(f"{item1} + {item2} = {result or "XXX"}")
         if is_new and result:
             items = self.item_lists[(len(self.game.obtained) - 1) % self.n_col]
             items.set(list(items.get()) + [result])
 
-        self.root.config(cursor="")
-
     def _handle_error(self, error):
-        self.log_txt.config(state="normal")
-
-        if self.log_txt.get("1.0", tk.END).endswith("Thinking...\n"):
-            self.log_txt.delete("end-12c", "end-1c")
-
         if isinstance(error, RetryError):
             error = error.last_attempt.exception()
-
-        self.log_txt.insert(tk.END, f"API Error: {str(error)[:50]}\n", "null")
-        
-        self.log_txt.see(tk.END)
-        self.log_txt.config(state="disabled")
-
+            
+        self.toggle_thinking()
         print(error)
-        self.root.config(cursor="")
+
+        self.log_txt.config(state="normal")
+        self.log_txt.insert(tk.END, f"API Error: {str(error)[:50]}\n", "null")
+        self.log_txt.config(state="disabled")
+        self.log_txt.see(tk.END)
+
         self.combine.config(state="active")
