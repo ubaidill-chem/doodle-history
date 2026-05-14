@@ -1,0 +1,298 @@
+{
+    "flags": [
+        {
+            "item": "Trench Foot",
+            "issue": "granularity",
+            "reason": "Too specific a medical condition; better as flavor text for Trench Warfare.",
+            "action": "Trench Warfare"
+        },
+        {
+            "item": "Trench Warfare",
+            "issue": "granularity",
+            "reason": "A tactical sub-event of WWI rather than a primary discovery node.",
+            "action": "World War I"
+        },
+        {
+            "item": "Enigma",
+            "issue": "granularity",
+            "reason": "A specific encryption device; better as flavor for Espionage or World War II.",
+            "action": "Espionage"
+        },
+        {
+            "item": "Penicillin",
+            "issue": "granularity",
+            "reason": "A specific medical discovery; better categorized under the broader Medicine node.",
+            "action": "Medicine"
+        },
+        {
+            "item": "Artificial Heart",
+            "issue": "granularity",
+            "reason": "A specific medical invention; too granular for the conceptual scale of the universe.",
+            "action": "Medicine"
+        },
+        {
+            "item": "Watergate",
+            "issue": "granularity",
+            "reason": "A specific political scandal; better as flavor text for Politics.",
+            "action": "Politics"
+        },
+        {
+            "item": "Suburbia",
+            "issue": "granularity",
+            "reason": "A specific demographic outcome of urbanization.",
+            "action": "Urbanization"
+        },
+        {
+            "item": "Urban Sprawl",
+            "issue": "granularity",
+            "reason": "A specific pattern of urban development.",
+            "action": "Urbanization"
+        },
+        {
+            "item": "Supermarket",
+            "issue": "granularity",
+            "reason": "A specific retail manifestation of consumer culture.",
+            "action": "Consumerism"
+        },
+        {
+            "item": "Email",
+            "issue": "granularity",
+            "reason": "A specific communication application within the Information Age.",
+            "action": "Information Age"
+        },
+        {
+            "item": "Personal Computer",
+            "issue": "granularity",
+            "reason": "A specific hardware manifestation of the Information Age.",
+            "action": "Information Age"
+        },
+        {
+            "item": "Transistor",
+            "issue": "granularity",
+            "reason": "A technical component that is better represented as part of the Information Age node.",
+            "action": "Information Age"
+        },
+        {
+            "item": "Microprocessor",
+            "issue": "granularity",
+            "reason": "A technical component better suited as flavor for the Information Age.",
+            "action": "Information Age"
+        },
+        {
+            "item": "Satellite Surveillance",
+            "issue": "duplicate",
+            "reason": "Substantially overlaps with the functionality and concept of the Satellite Network node.",
+            "action": "Satellite Network"
+        },
+        {
+            "item": "Holodomor",
+            "issue": "granularity",
+            "reason": "A specific instance of genocide; better as flavor text for the Genocide node.",
+            "action": "Genocide"
+        },
+        {
+            "item": "Holocust",
+            "issue": "granularity",
+            "reason": "A specific instance of genocide; better as flavor text for the Genocide node.",
+            "action": "Genocide"
+        },
+        {
+            "item": "Rwandan Genocide",
+            "issue": "granularity",
+            "reason": "A specific instance of genocide; better as flavor text for the Genocide node.",
+            "action": "Genocide"
+        },
+        {
+            "item": "Jazz",
+            "issue": "granularity",
+            "reason": "A specific musical genre; better as flavor for the Music node.",
+            "action": "Music"
+        },
+        {
+            "item": "Hollywood",
+            "issue": "granularity",
+            "reason": "A specific industry center of mass media.",
+            "action": "Mass Media"
+        },
+        {
+            "item": "Cinema",
+            "issue": "granularity",
+            "reason": "A specific medium of mass communication.",
+            "action": "Mass Media"
+        },
+        {
+            "item": "Radio",
+            "issue": "granularity",
+            "reason": "A specific medium of mass communication.",
+            "action": "Mass Media"
+        },
+        {
+            "item": "Newspaper",
+            "issue": "granularity",
+            "reason": "A specific medium of mass communication.",
+            "action": "Mass Media"
+        },
+        {
+            "item": "Fertilizer",
+            "issue": "granularity",
+            "reason": "A specific agricultural input made of petrochemicals.",
+            "action": "Petrochemicals"
+        },
+        {
+            "item": "Pesticide",
+            "issue": "granularity",
+            "reason": "A specific agricultural input made of petrochemicals.",
+            "action": "Petrochemicals"
+        },
+        {
+            "item": "Manhattan Project",
+            "issue": "granularity",
+            "reason": "The specific R&D program that produced nuclear weapons.",
+            "action": "Nuclear Weapons"
+        },
+        {
+            "item": "Chernobyl Disaster",
+            "issue": "granularity",
+            "reason": "A specific historical event in the history of nuclear energy.",
+            "action": "Nuclear Power"
+        },
+        {
+            "item": "Nobel Prize",
+            "issue": "granularity",
+            "reason": "An institutional reward rather than a core scientific or structural concept.",
+            "action": "Science"
+        },
+        {
+            "item": "DNA",
+            "issue": "granularity",
+            "reason": "A specific biological discovery; better as flavor for the Biology node.",
+            "action": "Biology"
+        },
+        {
+            "item": "Quantum Mechanics",
+            "issue": "granularity",
+            "reason": "A specialized branch of physics.",
+            "action": "Physics"
+        },
+        {
+            "item": "Social Security",
+            "issue": "granularity",
+            "reason": "A specific component program of the welfare state.",
+            "action": "Welfare State"
+        },
+        {
+            "item": "Universal Healthcare",
+            "issue": "granularity",
+            "reason": "A specific policy goal of the welfare state.",
+            "action": "Welfare State"
+        },
+        {
+            "item": "Public Housing",
+            "issue": "granularity",
+            "reason": "A specific policy tool of the welfare state.",
+            "action": "Welfare State"
+        },
+        {
+            "item": "Austerity",
+            "issue": "granularity",
+            "reason": "A specific fiscal policy often tied to Neoliberalism.",
+            "action": "Neoliberalism"
+        },
+        {
+            "item": "Five-Year Plan",
+            "issue": "granularity",
+            "reason": "A specific economic planning tool used by Communist states.",
+            "action": "Communism"
+        },
+        {
+            "item": "New Deal",
+            "issue": "granularity",
+            "reason": "A specific national policy set within US history.",
+            "action": "USA"
+        },
+        {
+            "item": "Marshall Plan",
+            "issue": "granularity",
+            "reason": "A specific diplomatic and economic initiative of the Cold War.",
+            "action": "Cold War"
+        },
+        {
+            "item": "Vietnam War",
+            "issue": "granularity",
+            "reason": "A specific conflict that falls under the broader Proxy Wars or Cold War nodes.",
+            "action": "Cold War"
+        },
+        {
+            "item": "Cuban Missile Crisis",
+            "issue": "granularity",
+            "reason": "A specific event within the Cold War timeline.",
+            "action": "Cold War"
+        },
+        {
+            "item": "Berlin Wall",
+            "issue": "granularity",
+            "reason": "A specific physical manifestation of the Cold War.",
+            "action": "Cold War"
+        },
+        {
+            "item": "Red Scare",
+            "issue": "granularity",
+            "reason": "A specific political phenomenon within the Cold War.",
+            "action": "Cold War"
+        },
+        {
+            "item": "Strategic Defense Initiative",
+            "issue": "granularity",
+            "reason": "A specific military project of the Cold War era.",
+            "action": "Cold War"
+        },
+        {
+            "item": "Treaty of Versailles",
+            "issue": "granularity",
+            "reason": "The concluding diplomatic event of World War I.",
+            "action": "World War I"
+        },
+        {
+            "item": "Japan Economic Miracle",
+            "issue": "granularity",
+            "reason": "A specific national economic trend; better as flavor for Capitalism or Globalization.",
+            "action": "Capitalism"
+        },
+        {
+            "item": "Sovereign Wealth Fund",
+            "issue": "granularity",
+            "reason": "A specific tool of modern finance.",
+            "action": "Financialization"
+        },
+        {
+            "item": "Offshore Banking",
+            "issue": "granularity",
+            "reason": "A specific practice within modern financialization.",
+            "action": "Financialization"
+        },
+        {
+            "item": "Credit Card",
+            "issue": "granularity",
+            "reason": "A specific consumer tool of financialization.",
+            "action": "Financialization"
+        },
+        {
+            "item": "Assembly Line",
+            "issue": "granularity",
+            "reason": "The primary mechanism for Mass Production; redundant as a separate concept node.",
+            "action": "Mass Production"
+        },
+        {
+            "item": "Oil",
+            "issue": "granularity",
+            "reason": "A specific type of natural resource; redundant with Natural Resources and Petrochemicals.",
+            "action": "Natural Resources"
+        },
+        {
+            "item": "Plastic",
+            "issue": "granularity",
+            "reason": "A specific material derivative of the petrochemical industry.",
+            "action": "Petrochemicals"
+        }
+    ]
+}

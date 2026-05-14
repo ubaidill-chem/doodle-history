@@ -11,8 +11,23 @@ from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_ex
 from db_setup import embed_and_store, get_embed_blob, load_sqlite_vec
 
 
-MIN_DIST = 0.15
+MIN_DIST = 0.16
 client = genai.Client()
+
+def _check_similar(text: str):
+    vec = get_embed_blob(text)
+    query = "SELECT name, distance FROM item_embeds WHERE embed MATCH ? AND k = 2 ORDER BY distance ASC"
+    
+    with sqlite3.connect("combinations.db") as conn:
+        load_sqlite_vec(conn)
+        rows = conn.execute(query, (vec,)).fetchall()
+
+    for item, dist in rows:
+        if dist > 0:
+            print(f'AI: "{text}" vs. Inventory: "{item}" --> distance = {dist}')
+        if dist < MIN_DIST:
+            return item
+    return None
 
 class ComboResult(BaseModel):
     result: Optional[str] = None
@@ -147,28 +162,13 @@ Context: Dscovered elements:
             return result_obj
         
         print(f"AI claims {result_obj.result} as tier {result_obj.tier}")
-        if result_obj.result and (canon := self._check_similar(result_obj.result)):
+        if result_obj.result and (canon := _check_similar(result_obj.result)):
             result_obj.result = canon
 
         if self._is_tier_correlate(result_obj):
             return result_obj
         
         return ComboResult()
-
-    def _check_similar(self, text: str):
-        vec = get_embed_blob(text)
-        query = "SELECT name, distance FROM item_embeds WHERE embed MATCH ? AND k = 20 ORDER BY distance ASC"
-        
-        with sqlite3.connect("combinations.db") as conn:
-            load_sqlite_vec(conn)
-            rows = conn.execute(query, (vec,)).fetchall()
-
-        for item, dist in rows:
-            if dist > 0:
-                print(f'AI: "{text}" vs. Inventory: "{item}" --> distance = {dist}')
-            if dist < MIN_DIST:
-                return item
-        return None
 
     def combine(self, discovered: list[str], item1: str, item2: str) -> dict[str, Optional[str]]:
         with sqlite3.connect("combinations.db") as conn:
@@ -190,10 +190,10 @@ Context: Dscovered elements:
 
             result_id = None
             if result:
-                if canon := self._check_similar(result):
+                if canon := _check_similar(result):
                     result = canon
 
-                embed_and_store([result])
+                embed_and_store(conn, result)
                 cursor.execute("INSERT OR IGNORE INTO items (name) VALUES (?)", (result,))
                 cursor.execute("SELECT id FROM items WHERE name = ?", (result,))
                 result_id = cursor.fetchone()[0]
